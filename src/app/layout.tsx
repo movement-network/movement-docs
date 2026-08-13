@@ -1,5 +1,6 @@
 import '@/app/global.css';
 import { RootProvider } from 'fumadocs-ui/provider';
+import { headers } from 'next/headers';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
@@ -46,14 +47,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Layout({ children }: { children: ReactNode }) {
+// Reading the nonce opts every route into dynamic rendering, which the CSP
+// requires: a prerendered page would ship HTML whose script tags carry no
+// nonce, and the enforcing policy would then block all of them. Skipped in the
+// static export, which has no middleware to mint one and no request to read.
+export default async function Layout({ children }: { children: ReactNode }) {
+  const nonce =
+    process.env.STATIC_EXPORT === 'true'
+      ? undefined
+      : ((await headers()).get('x-nonce') ?? undefined);
+
   return (
     <html lang="en" className={`${oracle.className} dark`} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen" suppressHydrationWarning>
         {/* `search.enabled` is gated on STATIC_EXPORT — the search route
             is a Fumadocs Orama backend that can't be pre-rendered, so in
             the static `/mvdocs` build the search bar is hidden. */}
-        <RootProvider search={{ enabled: process.env.STATIC_EXPORT !== 'true' }}>
+        {/* next-themes writes an inline anti-flash script that Next does not
+            nonce on its behalf; without this the enforcing CSP blocks it. */}
+        <RootProvider
+          search={{ enabled: process.env.STATIC_EXPORT !== 'true' }}
+          theme={{ nonce }}
+        >
           {children}
         </RootProvider>
       </body>

@@ -31,6 +31,10 @@ const STASHED = [
   // The route is a build-time convenience for LLM consumers; not needed
   // for the static mirror.
   ['src/app/llms.mdx/[[...slug]]/route.ts', 'src/app/llms.mdx/[[...slug]]/route.ts.static-skip'],
+  // Middleware sends the nonce-based CSP, and `output: 'export'` has no server
+  // to run it — Next fails the build outright if the file is present. The
+  // Apache vhost serving `/mvdocs` needs an equivalent policy set there.
+  ['src/middleware.ts', 'src/middleware.ts.static-skip'],
 ];
 
 async function stash() {
