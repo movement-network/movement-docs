@@ -18,7 +18,8 @@ import { NextResponse, type NextRequest } from 'next/server';
  *     at /api/search, and it drives next-themes, whose inline anti-flash
  *     script is nonced via RootProvider's `theme` prop in src/app/layout.tsx
  *   - next/font/local (ABC Oracle) -> self-hosted woff2 only
- *   - no third-party script tags; outbound links are navigations, not fetches
+ *   - no third-party script tags, no iframes and no hot-linked images; outbound
+ *     links are navigations, not fetches
  */
 export function middleware(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID());
@@ -33,11 +34,12 @@ export function middleware(request: NextRequest) {
     // Next and fumadocs-ui inject styles at runtime; nonces do not propagate
     // to those the way 'strict-dynamic' does for script.
     `style-src 'self' 'unsafe-inline'`,
-    // Docs pages embed images and diagrams hosted outside this origin.
-    `img-src 'self' data: blob: https:`,
+    // Every image in content/ and src/ is served from this origin; nothing is
+    // hot-linked. Adding an external image or an embedded video player means
+    // naming its host here rather than widening this back to https:.
+    `img-src 'self' data:`,
     `font-src 'self' data:`,
-    // Docs pages embed video walkthroughs.
-    `frame-src https:`,
+    `frame-src 'none'`,
     `connect-src 'self' https:`,
     `object-src 'none'`,
     `base-uri 'self'`,
