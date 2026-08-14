@@ -69,7 +69,7 @@ export const config = {
     // so a cached prefetch cannot pin a stale nonce, which also means x-nonce
     // is absent on those requests.
     {
-      source: '/((?!api|_next/static|_next/image|favicon.ico|[^?]*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|bmp|woff|woff2|ttf|otf|json|txt|xml|pdf|mp4|webm|lottie|webmanifest)$).*)',
+      source: '/((?!api|_next/static|_next/image|favicon\\.ico|[^?]*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|bmp|woff|woff2|ttf|otf|json|txt|xml|pdf|mp4|webm|lottie|webmanifest)$).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
