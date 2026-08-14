@@ -63,13 +63,13 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Excludes /api and the Next build output, neither of which are documents.
-    // The 11 files under public/ are NOT excluded and still run this, so they
-    // get a per-request nonce header they have no use for; narrowing that is a
-    // follow-up. Prefetches are excluded so a cached prefetch cannot pin a
-    // stale nonce, which also means x-nonce is absent on those requests.
+    // Excludes /api and the Next build output, neither of which are documents. Static asset
+    // extensions are excluded too, so nothing under public/ runs this and picks
+    // up a per-request nonce header it has no use for. Prefetches are excluded
+    // so a cached prefetch cannot pin a stale nonce, which also means x-nonce
+    // is absent on those requests.
     {
-      source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+      source: '/((?!api|_next/static|_next/image|favicon.ico|[^?]*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|bmp|woff|woff2|ttf|otf|json|txt|xml|pdf|mp4|webm|lottie|webmanifest)$).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
