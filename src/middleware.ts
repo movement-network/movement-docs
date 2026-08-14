@@ -63,8 +63,11 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Documents only. Static assets and images carry no script, and prefetches
-    // are excluded so a cached prefetch cannot pin a stale nonce.
+    // Excludes /api and the Next build output, neither of which are documents.
+    // The 11 files under public/ are NOT excluded and still run this, so they
+    // get a per-request nonce header they have no use for; narrowing that is a
+    // follow-up. Prefetches are excluded so a cached prefetch cannot pin a
+    // stale nonce, which also means x-nonce is absent on those requests.
     {
       source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
       missing: [
