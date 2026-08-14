@@ -40,12 +40,16 @@ export function middleware(request: NextRequest) {
     `img-src 'self' data:`,
     `font-src 'self' data:`,
     `frame-src 'none'`,
-    `connect-src 'self' https:`,
+    // ws: is dev only: 'self' covers the HMR socket on localhost, but not when
+    // the dev server is reached over a LAN IP.
+    `connect-src 'self' https:${isDev ? ' ws:' : ''}`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
     `frame-ancestors 'none'`,
-    `upgrade-insecure-requests`,
+    // Production only. Over a LAN IP, `next dev` subresources get rewritten to
+    // https:// against a server with no TLS, so nothing loads. HSTS covers prod.
+    ...(isDev ? [] : [`upgrade-insecure-requests`]),
   ].join('; ');
 
   const requestHeaders = new Headers(request.headers);
