@@ -3,6 +3,7 @@ import { RootProvider } from 'fumadocs-ui/provider';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
+import GTM from '@/components/GTM';
 
 const oracle = localFont({
   src: [
@@ -56,6 +57,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <RootProvider search={{ enabled: process.env.STATIC_EXPORT !== 'true' }}>
           {children}
         </RootProvider>
+        <GTM />
       </body>
     </html>
   );
