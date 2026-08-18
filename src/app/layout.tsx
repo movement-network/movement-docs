@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 const oracle = localFont({
   src: [
@@ -71,6 +72,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         >
           {children}
         </RootProvider>
+        <GoogleAnalytics />
       </body>
     </html>
   );
