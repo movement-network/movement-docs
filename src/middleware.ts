@@ -70,13 +70,16 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Excludes /api and the Next build output, neither of which are documents. Static asset
-    // extensions are excluded too, so nothing under public/ runs this and picks
-    // up a per-request nonce header it has no use for. Prefetches are excluded
-    // so a cached prefetch cannot pin a stale nonce, which also means x-nonce
-    // is absent on those requests.
+    // Excludes the Next build output and the two real route handlers under
+    // /api, /api/search and /api/spec. Everything else beneath /api is a
+    // document: src/app/api/[[...slug]]/page.tsx renders the API reference
+    // through DocsPage, so excluding /api wholesale would take the playground
+    // out of the policy. Static asset extensions are excluded too, so nothing
+    // under public/ runs this and picks up a per-request nonce header it has no
+    // use for. Prefetches are excluded so a cached prefetch cannot pin a stale
+    // nonce, which also means x-nonce is absent on those requests.
     {
-      source: '/((?!api|_next/static|_next/image|favicon\\.ico|[^?]*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|bmp|woff|woff2|ttf|otf|json|txt|xml|pdf|mp4|webm|lottie|webmanifest)$).*)',
+      source: '/((?!api/search|api/spec|_next/static|_next/image|favicon\\.ico|[^?]*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|bmp|woff|woff2|ttf|otf|json|txt|xml|pdf|mp4|webm|lottie|webmanifest)$).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
