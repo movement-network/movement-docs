@@ -1,0 +1,89 @@
+import { NextResponse, type NextRequest } from 'next/server';
+
+/**
+ * Enforcing Content-Security-Policy with a per-request nonce.
+ *
+ * Next emits inline bootstrap and streaming-payload scripts, so an enforcing
+ * policy needs either 'unsafe-inline' or a nonce. Next reads the nonce off the
+ * request's own content-security-policy header and stamps it onto the script
+ * tags it generates, so the header has to be set on both request and response.
+ *
+ * Applies to the server-rendered build only. `output: 'export'` has no server
+ * to run middleware, so `scripts/build-static.mjs` stashes this file for the
+ * duration of that build and the Apache vhost serving `/mvdocs` has to send an
+ * equivalent policy itself.
+ *
+ * Runtime surface this is tuned to:
+ *   - fumadocs-ui -> bundled; its search UI calls the same-origin Orama route
+ *     at /api/search, and it drives next-themes, whose inline anti-flash
+ *     script is nonced via RootProvider's `theme` prop in src/app/layout.tsx
+ *   - next/font/local (ABC Oracle) -> self-hosted woff2 only
+ *   - fumadocs-openapi -> the API reference pages render a playground whose
+ *     Send Request button fetches the node endpoints named in the spec
+ *     straight from the browser, which is why connect-src stays broad
+ *   - no third-party script tags, no iframes and no hot-linked images; outbound
+ *     links are navigations, not fetches
+ */
+export function middleware(request: NextRequest) {
+  const nonce = btoa(crypto.randomUUID());
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  const csp = [
+    `default-src 'self'`,
+    // 'strict-dynamic' trusts scripts loaded by an already-trusted (nonced)
+    // script. Host allowlists in script-src are ignored once it is set. HMR
+    // needs 'unsafe-eval' in dev; production builds do not.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}`,
+    // Next and fumadocs-ui inject styles at runtime; nonces do not propagate
+    // to those the way 'strict-dynamic' does for script.
+    `style-src 'self' 'unsafe-inline'`,
+    // Every image in content/ and src/ is served from this origin; nothing is
+    // hot-linked. Adding an external image or an embedded video player means
+    // naming its host here rather than widening this back to https:.
+    `img-src 'self' data:`,
+    `font-src 'self' data:`,
+    `frame-src 'none'`,
+    // Broader than the rest of this policy on purpose. The API playground
+    // sends requests to whichever node endpoint the spec names, and those hosts
+    // change per network, so an allowlist here would break Send Request on the
+    // reference pages. script-src is what constrains execution.
+    // ws: is dev only: 'self' covers the HMR socket on localhost, but not when
+    // the dev server is reached over a LAN IP.
+    `connect-src 'self' https:${isDev ? ' ws:' : ''}`,
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `frame-ancestors 'none'`,
+    // Production only. Over a LAN IP, `next dev` subresources get rewritten to
+    // https:// against a server with no TLS, so nothing loads. HSTS covers prod.
+    ...(isDev ? [] : [`upgrade-insecure-requests`]),
+  ].join('; ');
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('content-security-policy', csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set('content-security-policy', csp);
+  return response;
+}
+
+export const config = {
+  matcher: [
+    // Excludes the Next build output and the two real route handlers under
+    // /api, /api/search and /api/spec. Everything else beneath /api is a
+    // document: src/app/api/[[...slug]]/page.tsx renders the API reference
+    // through DocsPage, so excluding /api wholesale would take the playground
+    // out of the policy. Static asset extensions are excluded too, so nothing
+    // under public/ runs this and picks up a per-request nonce header it has no
+    // use for. Prefetches are excluded so a cached prefetch cannot pin a stale
+    // nonce, which also means x-nonce is absent on those requests.
+    {
+      source: '/((?!api/search|api/spec|_next/static|_next/image|favicon\\.ico|[^?]*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|bmp|woff|woff2|ttf|otf|json|txt|xml|pdf|mp4|webm|lottie|webmanifest)$).*)',
+      missing: [
+        { type: 'header', key: 'next-router-prefetch' },
+        { type: 'header', key: 'purpose', value: 'prefetch' },
+      ],
+    },
+  ],
+};

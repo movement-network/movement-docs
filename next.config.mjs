@@ -3,7 +3,9 @@ import { createMDX } from 'fumadocs-mdx/next';
 const withMDX = createMDX();
 const isStatic = process.env.STATIC_EXPORT === 'true';
 
-// Baseline security headers. No HSTS here — the platform already sends it, and
+// Baseline security headers. The Content-Security-Policy is not here: it
+// carries a per-request nonce and is set in src/middleware.ts.
+// No HSTS here — the platform already sends it, and
 // setting it per-repo is how the estate ended up with inconsistent max-ages.
 // Permissions-Policy deliberately omits accelerometer/gyroscope/magnetometer:
 // a top-level policy is inherited by iframes and cannot be widened by their
