@@ -18,6 +18,9 @@ import { NextResponse, type NextRequest } from 'next/server';
  *     at /api/search, and it drives next-themes, whose inline anti-flash
  *     script is nonced via RootProvider's `theme` prop in src/app/layout.tsx
  *   - next/font/local (ABC Oracle) -> self-hosted woff2 only
+ *   - fumadocs-openapi -> the API reference pages render a playground whose
+ *     Send Request button fetches the node endpoints named in the spec
+ *     straight from the browser, which is why connect-src stays broad
  *   - no third-party script tags, no iframes and no hot-linked images; outbound
  *     links are navigations, not fetches
  */
@@ -40,6 +43,10 @@ export function middleware(request: NextRequest) {
     `img-src 'self' data:`,
     `font-src 'self' data:`,
     `frame-src 'none'`,
+    // Broader than the rest of this policy on purpose. The API playground
+    // sends requests to whichever node endpoint the spec names, and those hosts
+    // change per network, so an allowlist here would break Send Request on the
+    // reference pages. script-src is what constrains execution.
     // ws: is dev only: 'self' covers the HMR socket on localhost, but not when
     // the dev server is reached over a LAN IP.
     `connect-src 'self' https:${isDev ? ' ws:' : ''}`,
