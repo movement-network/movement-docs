@@ -47,12 +47,14 @@ This command creates the necessary folders and files for your Move project:
 
 ```
 Move.toml
+.gitignore
 sources/
 scripts/
 tests/
 ```
 
 - **Move.toml**: Configuration file for your Move project.
+- **.gitignore**: Pre-configured to ignore build output.
 - **sources/**: Directory where you'll write your Move modules.
 - **scripts/**: Directory for transaction scripts (optional).
 - **tests/**: Directory for writing unit tests.
@@ -61,7 +63,11 @@ tests/
 
 ## Step 2: Initialize the CLI
 
-If you are using Aptos CLI - ensure that you are using version 3.5 or lower. You can replace all `movement` commands with `aptos` in the following steps.
+<Callout type="warning">
+
+If you are using the Aptos CLI, ensure that you are using version 3.5 or lower. You can replace all `movement` commands with `aptos` in the following steps.
+
+</Callout>
 
 Now, initialize the CLI with the following command:
 
@@ -71,11 +77,13 @@ movement init
 
 <Callout type="info">
 
-**Alternative:** You can also use the following command to skip the interactive prompts:
+**Alternative:** You can pass the network and endpoints as flags to skip those prompts:
 
 ```bash
 movement init --network custom --rest-url https://testnet.movementnetwork.xyz/v1 --faucet-url https://faucet.testnet.movementnetwork.xyz/
 ```
+
+You will still be prompted for a private key — press **Enter** to generate a new one.
 
 </Callout>
 
@@ -86,17 +94,24 @@ movement init --network custom --rest-url https://testnet.movementnetwork.xyz/v1
    You'll be prompted to select a network:
 
    ```bash
-   Choose network from [devnet, testnet, local, custom | defaults to devnet]:
+   Choose network from [devnet, testnet, mainnet, local, custom | defaults to testnet]
    ```
 
    Type `custom` and press **Enter**.
 
-  You will be promted for the following details from our [Network EndPoints](/devs/networkEndpoints)
+2. **Enter the Endpoints**
 
-  - RPC/Rest Endpoint: https://testnet.movementnetwork.xyz/v1
-  - Faucet Endpoint: https://faucet.testnet.movementnetwork.xyz/
+   You will then be prompted for the endpoints, which come from our [Network Endpoints](/devs/networkEndpoints):
 
-1. **Enter Private Key**
+   ```bash
+   Enter your rest endpoint [Current: None | No input: Exit (or keep the existing if present)]
+   Enter your faucet endpoint [Current: None | No input: Skip (or keep the existing one if present) | 'skip' to not use a faucet]
+   ```
+
+   - REST/RPC Endpoint: `https://testnet.movementnetwork.xyz/v1`
+   - Faucet Endpoint: `https://faucet.testnet.movementnetwork.xyz/`
+
+3. **Enter Private Key**
 
    Next, you'll be asked to enter your private key:
 
@@ -112,8 +127,12 @@ movement init --network custom --rest-url https://testnet.movementnetwork.xyz/v1
 After completing the prompts, you should see a message like:
 
 ```bash
+Account 0xYOUR_ACCOUNT_ADDRESS is not funded, funding it with 100000000 Octas
+Account 0xYOUR_ACCOUNT_ADDRESS funded successfully
+
+---
 Movement CLI is now set up for account 0xYOUR_ACCOUNT_ADDRESS as profile default!
-See the account here: https://explorer.movementnetwork.xyz/account/0xYOUR_ACCOUNT_ADDRESS?network=bardock+testnet
+See the account here: https://explorer.movementnetwork.xyz/account/0xYOUR_ACCOUNT_ADDRESS?network=custom
 Run `movement --help` for more information about commands
 {
   "Result": "Success"
@@ -122,16 +141,16 @@ Run `movement --help` for more information about commands
 
 <Callout type="info">
 
-Note that Bardock Explorer is available here: https://explorer.movementnetwork.xyz/?network=bardock+testnet
+Because the profile was created with `--network custom`, the CLI appends `?network=custom` to the links it prints. To view your account on the Bardock testnet explorer, swap that for `?network=bardock+testnet`:
+https://explorer.movementnetwork.xyz/account/0xYOUR_ACCOUNT_ADDRESS?network=bardock+testnet
+
+The Bardock explorer home is at https://explorer.movementnetwork.xyz/?network=bardock+testnet
 
 </Callout>
 
 ---
 
 ## Step 3: Fund Your Account (If Needed)
-
-
-## Step 2: Fund Your Account
 
 Your account should already be funded with testnet tokens after initialization. However, if you need additional funds for your wallet, you can use the faucet.
 
@@ -164,13 +183,15 @@ This configuration file stores information about your default profile, including
 ---
 profiles:
   default:
-    network: Testnet
+    network: Custom
     private_key: "YOUR_PRIVATE_KEY"
     public_key: "YOUR_PUBLIC_KEY"
-    account: "YOUR_ACCOUNT_ADDRESS"
+    account: YOUR_ACCOUNT_ADDRESS
     rest_url: "https://testnet.movementnetwork.xyz/v1"
     faucet_url: "https://faucet.testnet.movementnetwork.xyz/"
 ```
+
+The `network` field reads `Custom` (not `Testnet`) because you selected `custom` and supplied the testnet endpoints yourself. Note also that `account` is stored **without** a leading `0x`.
 
 <Callout type="warning">
 
@@ -184,12 +205,18 @@ profiles:
 
 ### Create the Module File
 
-Navigate to the `Sources/` directory and create a new file named `hello_blockchain.move`:
+Navigate to the `sources/` directory and create a new file named `hello_blockchain.move`:
 
 ```bash
-cd Sources
+cd sources
 touch hello_blockchain.move
 ```
+
+<Callout type="info">
+
+The directory is lowercase `sources`. On macOS and Linux, `cd Sources` will fail with "No such file or directory".
+
+</Callout>
 
 ### Add the Module Code
 
@@ -270,6 +297,12 @@ This is a "Hello, Blockchain" module written in Move. We won't dive into the syn
 
 </Callout>
 
+Return to the project root before running the commands in the next steps:
+
+```bash
+cd ..
+```
+
 ---
 
 ## Step 6: Compile the Module
@@ -288,11 +321,40 @@ movement move compile --named-addresses hello_blockchain=default
 
 To simplify future commands, you can add your account address to `Move.toml`.
 
-1. **Open `Move.toml`** and add:
+1. **Open `Move.toml`** and fill in the `[addresses]` section that `movement move init` already generated:
 
    ```toml
    [addresses]
    hello_blockchain = "0xYOUR_ACCOUNT_ADDRESS"
+   ```
+
+   Your `Move.toml` should then look like this:
+
+   ```toml
+   [package]
+   name = "hello_blockchain"
+   version = "1.0.0"
+   authors = []
+
+   [addresses]
+   hello_blockchain = "0xYOUR_ACCOUNT_ADDRESS"
+
+   [dev-addresses]
+
+   [dependencies.AptosFramework]
+   git = "https://github.com/movementlabsxyz/aptos-core.git"
+   rev = "m1"
+   subdir = "aptos-move/framework/aptos-framework"
+
+   [dev-dependencies]
+   ```
+
+   **Important:** add the entry **under the existing empty `[addresses]` header** rather than pasting a second `[addresses]` block at the end of the file. A duplicate header fails to parse:
+
+   ```
+   {
+     "Error": "Move compilation failed: Unable to parse Move package manifest: TOML parse error ... duplicate key `addresses` in document root"
+   }
    ```
 
 2. **Compile without Extra Flags**
@@ -324,15 +386,23 @@ Your module includes unit tests. Let's run them to ensure everything works as ex
 
 ### Run Tests
 
-```bash
-movement move test
-```
-
-> **Note:** If you didn't edit `Move.toml`, add the `--named-addresses` flag:
+If you did **not** edit `Move.toml` (Step 6, Option 1), pass the named address:
 
 ```bash
 movement move test --named-addresses hello_blockchain=default
 ```
+
+If you **did** add `hello_blockchain` to `Move.toml` (Step 6, Option 2):
+
+```bash
+movement move test
+```
+
+<Callout type="warning">
+
+Running `movement move test` without either the `--named-addresses` flag or the `Move.toml` entry fails with `address 'hello_blockchain' is not assigned a value`.
+
+</Callout>
 
 ### Expected Output
 
@@ -378,10 +448,18 @@ movement move publish --named-addresses hello_blockchain=default --included-arti
 
 The `--included-artifacts` option controls what gets included in your package:
 - **`none`**: Most compact, includes only bytecode (lowest gas cost)
-- **`sparse`**: Minimal artifacts needed to reconstruct source (default, ~2x size of `none`)
-- **`all`**: All available artifacts (~3-4x size of `none`)
+- **`sparse`**: Minimal artifacts needed to reconstruct source (this is the default)
+- **`all`**: All available artifacts, including full source maps
 
-Using `none` significantly reduces deployment costs but means you cannot reconstruct the source package from the blockchain.
+The size difference grows with the size of your source, so the savings are larger for real packages than for this one. For the `hello_blockchain` module above:
+
+| `--included-artifacts` | Package size | Gas used |
+| --- | --- | --- |
+| `none` | 1356 bytes | 1707 |
+| `sparse` (default) | 2035 bytes | 3359 |
+| `all` | 2533 bytes | — |
+
+Using `none` reduces deployment costs but means you cannot reconstruct the source package from the blockchain.
 This option is particularly useful for deployment of smart contracts without deploying the entire codebase.
 
 ### Confirm Deployment Cost
@@ -389,10 +467,11 @@ This option is particularly useful for deployment of smart contracts without dep
 You'll be prompted to confirm the transaction and spend a small amount of testnet tokens:
 
 ```
-Do you want to submit this transaction? [Y/n]
+package size 2035 bytes
+Do you want to submit a transaction for a range of [335900 - 503800] Octas at a gas unit price of 100 Octas? [yes/no] >
 ```
 
-Type `Y` and press **Enter**.
+Type `yes` and press **Enter**.
 
 > **Ensure you have sufficient testnet tokens from the faucet before proceeding.**
 
@@ -401,11 +480,11 @@ Type `Y` and press **Enter**.
 Upon successful deployment, you'll receive a confirmation:
 
 ```
-Transaction submitted: https://explorer.movementnetwork.xyz/txn/0xTRANSACTION_HASH?network=bardock+testnet
+Transaction submitted: https://explorer.movementnetwork.xyz/txn/0xTRANSACTION_HASH?network=custom
 {
   "Result": {
     "transaction_hash": "0xTRANSACTION_HASH",
-    "gas_used": 1696,
+    "gas_used": 3359,
     "gas_unit_price": 100,
     "sender": "0xYOUR_ACCOUNT_ADDRESS",
     "sequence_number": 0,
@@ -423,8 +502,38 @@ Transaction submitted: https://explorer.movementnetwork.xyz/txn/0xTRANSACTION_HA
 
 Congratulations! You've successfully deployed your first Move module on the Movement Testnet.
 
-- **View Your Module**: Visit the provided transaction link to see details on the explorer.
-- **Interact**: Use the Movement CLI or write scripts to interact with your deployed module.
+### Call the Entry Function
+
+Use `movement move run` to store a message. Replace `0xYOUR_ACCOUNT_ADDRESS` with your own address:
+
+```bash
+movement move run \
+  --function-id 0xYOUR_ACCOUNT_ADDRESS::message::set_message \
+  --args string:"Hello, Blockchain"
+```
+
+### Read It Back
+
+`get_message` is annotated `#[view]`, so it can be read for free with `movement move view`:
+
+```bash
+movement move view \
+  --function-id 0xYOUR_ACCOUNT_ADDRESS::message::get_message \
+  --args address:0xYOUR_ACCOUNT_ADDRESS
+```
+
+```json
+{
+  "Result": [
+    "Hello, Blockchain"
+  ]
+}
+```
+
+### View Your Module
+
+Visit the transaction link from Step 8, or open your account on the Bardock explorer:
+`https://explorer.movementnetwork.xyz/account/0xYOUR_ACCOUNT_ADDRESS?network=bardock+testnet`
 
 ---
 
@@ -433,11 +542,11 @@ Congratulations! You've successfully deployed your first Move module on the Move
 In this tutorial, you've:
 
 - Scaffolded a new Move project.
-- Initialized the Movement CLI.
-- Funded your testnet account.
+- Initialized the Movement CLI, which funded your testnet account.
 - Written and compiled a Move module.
 - Ran unit tests to ensure functionality.
 - Deployed your module to the testnet.
+- Called it and read its state back with the CLI.
 
 ---
 
