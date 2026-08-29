@@ -42,7 +42,7 @@ npx shadcn@latest add button card dialog input sonner
 Install the Movement SDK and wallet adapter packages:
 
 ```bash
-npm install @moveindustries/ts-sdk @aptos-labs/wallet-adapter-react
+npm install @movement-network/ts-sdk @aptos-labs/wallet-adapter-react
 ```
 
 ### 4. Install Wallet Standard and Peer Dependencies
@@ -65,7 +65,7 @@ Create a wallet provider component at `components/wallet-provider.tsx`:
 
 import { ReactNode } from "react";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
-import { MovementConfig, Network } from "@moveindustries/ts-sdk";
+import { MovementConfig, Network } from "@movement-network/ts-sdk";
 
 interface WalletProviderProps {
   children: ReactNode;
