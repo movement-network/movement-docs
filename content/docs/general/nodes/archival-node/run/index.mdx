@@ -111,3 +111,11 @@ The script handles all the restic configuration for anonymous access to the publ
 - **Retention**: 14 days of snapshots
 - **Format**: restic backup repositories
 </Callout>
+
+<Callout type="warn">
+**Restored before 2026-10-14? Delete the shared node identity once**
+
+Older snapshots include the backup node's persisted network identity, `db/ephemeral_identity_key`. A node that keeps it presents the same peer id as every other node restored from that snapshot, and the validator fullnodes close the duplicate connections every few seconds. Symptoms are `NoConnectedPeers` errors and constant reconnects.
+
+Stop the node, delete `db/ephemeral_identity_key` from its data directory, and start it again. It generates its own key and keeps it. This affects mainnet restores taken on or after 2026-05-05 and testnet restores from snapshots dated 2026-01-20 to 2026-02-06. The current `l1_restore.sh` removes the file automatically.
+</Callout>
