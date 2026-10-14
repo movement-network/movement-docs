@@ -5,7 +5,7 @@ description: Move USDC or USDT from Ethereum, Polygon, or Tron onto Movement ove
 
 # NEAR Intents SDK
 
-The [`@moveindustries/near-intents-sdk`](https://github.com/MoveIndustries/near-intents-sdk) is a thin TypeScript SDK for moving **USDC or USDT** from a supported origin chain onto **Movement** — landing as **USDCx** or **MOVE** — over [NEAR Intents](https://docs.near-intents.org). It wraps the official [1Click API](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api) and pins the destination to Movement, so a transfer can't accidentally land on the wrong chain.
+The [`@movement-network/near-intents-sdk`](https://github.com/MoveIndustries/near-intents-sdk) is a thin TypeScript SDK for moving **USDC or USDT** from a supported origin chain onto **Movement** — landing as **USDCx** or **MOVE** — over [NEAR Intents](https://docs.near-intents.org). It wraps the official [1Click API](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api) and pins the destination to Movement, so a transfer can't accidentally land on the wrong chain.
 
 It orchestrates the transfer — get a quote, build the deposit, track status — and **never signs, broadcasts, or holds keys**. Your own wallet signs the one on-chain step.
 
@@ -31,19 +31,19 @@ The destination is always Movement. You choose the origin (Ethereum, Polygon, or
 ## Installation
 
 ```bash tab="npm"
-npm install @moveindustries/near-intents-sdk
+npm install @movement-network/near-intents-sdk
 ```
 
 ```bash tab="pnpm"
-pnpm add @moveindustries/near-intents-sdk
+pnpm add @movement-network/near-intents-sdk
 ```
 
 ```bash tab="yarn"
-yarn add @moveindustries/near-intents-sdk
+yarn add @movement-network/near-intents-sdk
 ```
 
 ```bash tab="bun"
-bun add @moveindustries/near-intents-sdk
+bun add @movement-network/near-intents-sdk
 ```
 
 ## Quick start
@@ -58,7 +58,7 @@ import {
   submitDeposit,
   getStatus,
   isTerminal,
-} from "@moveindustries/near-intents-sdk";
+} from "@movement-network/near-intents-sdk";
 
 // configure() is optional — omit it entirely to run token-free (see Authentication).
 configure({ jwt: process.env.ONE_CLICK_JWT });
@@ -204,7 +204,7 @@ The origin wallet needs the chain's **native gas token** to send the deposit (ET
 Each example runs the full flow for one route. They share the `waitForSettlement` helper:
 
 ```ts
-import { getStatus, isTerminal } from "@moveindustries/near-intents-sdk";
+import { getStatus, isTerminal } from "@movement-network/near-intents-sdk";
 
 async function waitForSettlement(depositAddress: string) {
   for (;;) {
@@ -223,7 +223,7 @@ One flow covers both EVM origins — only `originChain` and the viem `chain` dif
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet } from "viem/chains"; // Polygon: import { polygon }
-import { configure, quoteDeposit, prepareDepositTx, submitDeposit } from "@moveindustries/near-intents-sdk";
+import { configure, quoteDeposit, prepareDepositTx, submitDeposit } from "@movement-network/near-intents-sdk";
 
 // Server-side, JWT stays private:
 configure({ jwt: process.env.ONE_CLICK_JWT }); // optional
@@ -263,7 +263,7 @@ console.log("Settled:", await waitForSettlement(depositAddress!));
 Tron is USDT-only. The deposit is a TRC-20 transfer through the injected `window.tronWeb` provider (TronLink):
 
 ```ts
-import { configure, quoteDeposit, prepareDepositTx, submitDeposit } from "@moveindustries/near-intents-sdk";
+import { configure, quoteDeposit, prepareDepositTx, submitDeposit } from "@movement-network/near-intents-sdk";
 
 configure({ baseUrl: "/api/1click" });
 
@@ -299,7 +299,7 @@ To avoid using `window.tronWeb` directly, use the [TronWallet Adapter](https://g
 ```ts
 import { TronWeb } from "tronweb";
 import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
-import { configure, quoteDeposit, prepareDepositTx, submitDeposit } from "@moveindustries/near-intents-sdk";
+import { configure, quoteDeposit, prepareDepositTx, submitDeposit } from "@movement-network/near-intents-sdk";
 
 configure({ baseUrl: "/api/1click" });
 
@@ -360,7 +360,7 @@ The adapter needs its provider set up once near the root of your app — wrap it
 `listTokens` returns the live set of supported tokens, filtered to the SDK's routes and tagged with the route keys `quoteDeposit` expects — so you can feed a token straight into a quote without any lookup:
 
 ```ts
-import { listTokens } from "@moveindustries/near-intents-sdk";
+import { listTokens } from "@movement-network/near-intents-sdk";
 
 const tokens = await listTokens();
 // each token carries: assetId, symbol, decimals, chain, contractAddress, price,

@@ -10,10 +10,10 @@ This React component implements a transaction signing and submission functionali
 ```typescript
 import React from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Movement, MovementConfig, Network } from '@moveindustries/ts-sdk';
+import { Movement, MovementConfig, Network } from '@movement-network/ts-sdk';
 ```
 - `@aptos-labs/wallet-adapter-react`: Provides wallet connection functionality
-- `@moveindustries/ts-sdk`: Movement blockchain SDK for interaction with the network
+- `@movement-network/ts-sdk`: Movement blockchain SDK for interaction with the network
 
 ## Configuration
 ```typescript
@@ -105,7 +105,7 @@ function App() {
 ```typescript title="src/components/signAndSubmitTx.tsx"
 import React from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Movement, MovementConfig, Network } from '@moveindustries/ts-sdk';
+import { Movement, MovementConfig, Network } from '@movement-network/ts-sdk';
 
 const config = new MovementConfig({ network: Network.MAINNET });
 const movement = new Movement(config);

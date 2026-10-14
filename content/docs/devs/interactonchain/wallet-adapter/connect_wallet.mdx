@@ -35,19 +35,19 @@ bun create next-app
 ### Install `@aptos-labs/wallet-adapter-react`
 
 ```bash tab="npm"
-npm install @aptos-labs/wallet-adapter-react @moveindustries/ts-sdk
+npm install @aptos-labs/wallet-adapter-react @movement-network/ts-sdk
 ```
 
 ```bash tab="pnpm"
-pnpm add @aptos-labs/wallet-adapter-react @moveindustries/ts-sdk
+pnpm add @aptos-labs/wallet-adapter-react @movement-network/ts-sdk
 ```
 
 ```bash tab="yarn"
-yarn add @aptos-labs/wallet-adapter-react @moveindustries/ts-sdk
+yarn add @aptos-labs/wallet-adapter-react @movement-network/ts-sdk
 ```
 
 ```bash tab="bun"
-bun add @aptos-labs/wallet-adapter-react @moveindustries/ts-sdk
+bun add @aptos-labs/wallet-adapter-react @movement-network/ts-sdk
 ```
 
 
@@ -57,7 +57,7 @@ Create a new files with name `provider/WalletProvider.tsx`, import the Aptos Wal
 ```typescript title="src/provider/WalletProvider.tsx"
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { PropsWithChildren } from "react";
-import { MovementConfig, Network } from "@moveindustries/ts-sdk";
+import { MovementConfig, Network } from "@movement-network/ts-sdk";
 
 export const WalletProvider = ({ children }: PropsWithChildren) => {
   const wallets = [
